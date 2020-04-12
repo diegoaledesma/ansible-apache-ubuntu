@@ -1,6 +1,6 @@
 ---
-app_user: "www-data"
-http_host: "aimpa.com"
-http_conf: "aimpa-com.conf"
+app_user: "app_user"
+http_host: "dominio"
+http_conf: "dominio.conf"
 http_port: "80"
 disable_default: true
