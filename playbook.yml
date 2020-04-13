@@ -1,31 +1,44 @@
-##################################################
-# DO Community Playbooks: Apache on Ubuntu 18.04
-##################################################
 ---
-- hosts: all
+- hosts: webserver3
   become: true
-  vars_files:
-    - site/default.yml
+  vars:
+    app_user: "app_user"
+    http_host: "domain.com"
+    http_conf: "domain-com.conf"
+    http_port: "80"
+    disable_default: true
 
   tasks:
     - name: Install prerequisites
       apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
       loop: [ 'aptitude' ]
 
-    - name: Install Apache
-      apt: name=apache2 update_cache=yes state=latest
+    - name: Install Apache2
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'apache2' ]
+
+    - name: PHP7
+      apt: name={{ item }} update_cache=yes state=latest
+      loop: [ 'php','libapache2-mod-php','php-mysql','php-mbstring','php-soap' ]
 
     - name: Create document root
       file:
         path: "/var/www/{{ http_host }}"
         state: directory
         owner: "{{ app_user }}"
+        group: "{{ app_user }}"
         mode: '0755'
 
     - name: Copy index test page
       template:
-        src: "site/index.html.j2"
-        dest: "/var/www/{{ http_host }}/index.html"
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0644'
+      with_items:
+      - {src: "site/index.html.j2", dest: "/var/www/{{ http_host }}/index.html"}
+      - {src: "site/info.php", dest: "/var/www/{{ http_host }}/"}
 
     - name: Set up Apache virtualhost
       template:
